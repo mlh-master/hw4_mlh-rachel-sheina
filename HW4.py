@@ -226,8 +226,8 @@ AdamOpt = Adam(lr=learn_rate,decay=decay)
 
 #--------------------------Impelment your code here:-------------------------------------
 new_a_model.compile(optimizer=AdamOpt, metrics=['accuracy'], loss='binary_crossentropy')
-#if not('results/' in os.listdir()):
-#   os.mkdir('results/')
+if not('results/' in os.listdir()):
+    os.mkdir('results/')
 model_name ='compiled_model.h5'
 new_a_model.save('results/'+model_name)
 
