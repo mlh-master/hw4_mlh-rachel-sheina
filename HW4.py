@@ -16,7 +16,7 @@ import numpy as np
 from tensorflow.keras.layers import Dense, MaxPool2D, Conv2D, Dropout
 from tensorflow.keras.layers import Flatten, InputLayer
 from tensorflow.keras.layers import BatchNormalization
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential,load_model
 from tensorflow.keras.optimizers import *
 
 from tensorflow.keras.initializers import Constant, he_normal
@@ -132,7 +132,9 @@ keras.backend.clear_session()
 # ---
 # <span style="color:red">***Task 1:***</span> *NN with fully connected layers. 
 # 
-# Elaborate a NN with 2 hidden fully connected layers with 300, 150 neurons and 4 neurons for classification. Use ReLU activation functions for the hidden layers and He_normal for initialization. Don't forget to flatten your image before feedforward to the first dense layer. Name the model `model_relu`.*
+# Elaborate a NN with 2 hidden fully connected layers with 300, 150 neurons and 4 neurons for classification.
+# Use ReLU activation functions for the hidden layers and He_normal for initialization.
+# Don't forget to flatten your image before feedforward to the first dense layer. Name the model `model_relu`.*
 # 
 # ---
 
@@ -140,9 +142,10 @@ keras.backend.clear_session()
 
 
 #--------------------------Impelment your code here:-------------------------------------
-def build_model(activation = 'relu'):
+def build_model(activation = 'relu', input=(32,32,1)):
     model = Sequential()
-    model.add(Flatten())
+
+    model.add(Flatten(input_shape=input))
     model.add(Dense(300, activation=activation, kernel_initializer=he_normal()))
     model.add(Dense(150, activation=activation,kernel_initializer=he_normal()))
     model.add(Dense(4, activation='softmax', kernel_initializer=he_normal()))
@@ -150,15 +153,7 @@ def build_model(activation = 'relu'):
 model_relu = build_model()
 #----------------------------------------------------------------------------------------
 
-
-# In[ ]:
-
-
-#model_relu.summary()
-
-
-# In[ ]:
-
+model_relu.summary()
 
 #Inputs: 
 input_shape = (32,32,1)
@@ -202,13 +197,6 @@ print("Test accuracy: %f " % (eval_result[1]))
 new_a_model = build_model('sigmoid')
 #----------------------------------------------------------------------------------------
 
-
-# In[ ]:
-
-
-#new_a_model.summary()
-
-
 # ---
 # <span style="color:red">***Task 3:***</span> *Number of epochs.* 
 # 
@@ -219,6 +207,7 @@ new_a_model = build_model('sigmoid')
 # ---
 
 # In[ ]:
+new_a_model.summary()
 
 
 #Inputs: 
@@ -237,14 +226,16 @@ AdamOpt = Adam(lr=learn_rate,decay=decay)
 
 #--------------------------Impelment your code here:-------------------------------------
 new_a_model.compile(optimizer=AdamOpt, metrics=['accuracy'], loss='binary_crossentropy')
+#if not('results/' in os.listdir()):
+#   os.mkdir('results/')
+model_name ='compiled_model.h5'
+new_a_model.save('results/'+model_name)
+
 fit_result =new_a_model.fit(x = BaseX_train , y =BaseY_train,batch_size =batch_size , epochs = epochs)
 eval_result = new_a_model.evaluate(x = X_test, y =Y_test ,batch_size =batch_size )
 print("Test loss: %f " % (eval_result[0]))
 print("Test accuracy: %f " % (eval_result[1]))
 
-
-keras.backend.clear_session()
-new_a_model_40 = build_model('sigmoid')
 #-----------------------------------------------------------------------------------------
 
 
@@ -266,9 +257,7 @@ AdamOpt = Adam(lr=learn_rate,decay=decay)
 
 
 #--------------------------Impelment your code here:-------------------------------------
-
-
-new_a_model_40.compile(optimizer=AdamOpt, metrics=['accuracy'], loss='binary_crossentropy')
+new_a_model_40 =load_model('results/'+model_name)
 fit_result =new_a_model_40.fit(x = BaseX_train , y =BaseY_train,batch_size =batch_size , epochs = epochs)
 eval_result = new_a_model_40.evaluate(x = X_test, y =Y_test ,batch_size =batch_size )
 print("Test loss: %f " % (eval_result[0]))
@@ -536,6 +525,11 @@ def get_net(filters_list, input_shape,drop,dropRate,reg):
     model.summary()
     return model
 NNet=get_net([32, 64, 64, 128, 128], input_shape,drop,dropRate,reg)
+#Defining the optimizar parameters:
+AdamOpt = Adam(lr=learn_rate,decay=decay)
+
+#Compile the network:
+NNet.compile(optimizer=AdamOpt, metrics=['acc'], loss='categorical_crossentropy')
 h = NNet.fit(x=BaseX_train, y=BaseY_train, batch_size=batch_size, epochs=epochs, verbose=1, validation_split=0, validation_data = (BaseX_val, BaseY_val), shuffle=True)
 results = NNet.evaluate(X_test,Y_test)
 print('test loss, test acc:', results)
